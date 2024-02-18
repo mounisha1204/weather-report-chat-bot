@@ -1,160 +1,60 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+import nltk
+import random
+import requests
+import re
+from nltk.chat.util import Chat, reflections
 
-# C extensions
-*.so
+# Define patterns and responses for the chatbot
+patterns = [
+    (r'hi|hello|hey', ['Hello!', 'Hi there!', 'Hey!']),
+    (r'how are you?', ['I am doing well, thank you!', 'I am fine, thanks!']),
+    (r'what is your name?', ['I am a chatbot!', 'My name is Chatbot.']),
+    (r'(.*) your name?', ['My name is Chatbot.', 'You can call me Chatbot.']),
+    (r'bye|goodbye', ['Goodbye!', 'See you later!', 'Bye!']),
+    (r'my name is (.*)', ['Nice to meet you, {}!', 'Hello, {}!']),
+    (r'I am (.*)', ['Hello, {}. How can I assist you today?', 'Hi, {}. What can I do for you?']),
+    (r'(.) age(.)', ['Age is just a number! Let\'s focus on something else.']),
+    (r'(.) (hungry|eat|food)(.)', ['What would you like to eat?', 'I can suggest some food options if you tell me your preferences.']),
+    (r'I like (.*)', ['That\'s great!', 'Awesome!', 'Nice choice!']),
+    (r'I need (.*)', ['Sure, I can help you with that. Please provide more details.']),
+    (r'(.) help (.)', ['I can assist you with various things. What do you need help with?']),
+    (r'(.) (movie|film)(.)', ['Do you have any specific genre in mind?', 'I can recommend some movies if you tell me your preferences.']),
+    (r'(.) (weather|forecast)(.)', ['Where are you located? I can check the weather for you.']),
+]
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+# Create and train the chatbot
+chatbot = Chat(patterns, reflections)
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
+# Function to get weather information
+def get_weather(location):
+    api_key = '5414e11be334c41535fd59ae4986c66b'  # Replace 'YOUR_API_KEY' with your actual API key
+    base_url = f'http://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}'
+    response = requests.get(base_url)
+    if response.status_code == 200:
+        data = response.json()
+        if 'main' in data and 'temp' in data['main']:
+            temperature = data['main']['temp']
+            temperature_celsius = round(temperature - 273.15, 2)
+            return f"The current temperature in {location} is {temperature_celsius}°C."
+    return "Sorry, I couldn't retrieve the weather information for that location."
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+# Define a function to interact with the chatbot
+def chat_with_bot():
+    print("Welcome! Start chatting with the chatbot (type 'quit' to exit)")
+    while True:
+        user_input = input("You: ")
+        if user_input.lower() == 'quit':
+            print("Chatbot: Goodbye!")
+            break
+        elif 'weather' in user_input.lower():
+            location = input("Chatbot: Please provide your location: ")
+            response = get_weather(location)
+            print("Chatbot:", response)
+        else:
+            response = chatbot.respond(user_input)
+            print("Chatbot:", response)
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-.pybuilder/
-target/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# IPython
-profile_default/
-ipython_config.py
-
-# pyenv
-#   For a library or package, you might want to ignore these files since the code is
-#   intended to run in multiple environments; otherwise, check them in:
-# .python-version
-
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
-
-# poetry
-#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
-#poetry.lock
-
-# pdm
-#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
-#pdm.lock
-#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
-#   in version control.
-#   https://pdm.fming.dev/#use-with-ide
-.pdm.toml
-
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
-__pypackages__/
-
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# pytype static type analyzer
-.pytype/
-
-# Cython debug symbols
-cython_debug/
-
-# PyCharm
-#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
+# Main function
+if __name__ == "__main__":
+    nltk.download('punkt')  # Download NLTK tokenizer data
+    chat_with_bot()  
